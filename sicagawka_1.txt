@@ -1,0 +1,83 @@
+==================================================
+ŚCIĄGAWKA MATLAB / OCTAVE - SYSTEMY DYNAMICZNE
+==================================================
+
+CZĘŚĆ 1: OPIS FUNKCJI I DZIAŁANIA KODU
+
+Wszystkie funkcje operują na zmiennej globalnej `baza`, która przechowuje listę systemów (jako tablica struktur MATLABa zawierająca pole `nazwa` oraz macierze `A`, `B`, `C`, `D`).
+
+1. inicjalizacja_bd.m (Skrypt inicjalizujący)
+- Co robi: Przygotowuje czyste środowisko MATLABa do pracy.
+- Co się dzieje w kodzie: clear, clc, close all czyszczą pamięć, okno poleceń i wykresy. addpath(pwd) dodaje folder do ścieżki. Deklaruje zmienne globalne (baza, A, B, C, D) i tworzy pustą strukturę bazy.
+
+2. wczytaj_p.m (Wczytywanie bazy z pliku ASCII)
+- Co robi: Wczytuje bazę systemów z pliku tekstowego (np. baza_z.txt).
+- Co się dzieje w kodzie: Otwiera plik przez fopen, czyta linia po linii (fgetl). Funkcja eval konwertuje tekst reprezentujący macierze na macierze numeryczne MATLABa, a struktura dopisywana jest do tablicy baza.
+
+3. wczytaj_k.m (Wczytywanie z klawiatury)
+- Co robi: Pozwala ręcznie dopisać nowy system za pomocą klawiatury.
+- Co się dzieje w kodzie: Używa polecenia input do pobrania nazwy i macierzy od użytkownika, a następnie dokleja strukturę na koniec tablicy baza.
+
+4. zapisz_bd.m (Zapis bazy do pliku)
+- Co robi: Zapisuje zawartość bazy do pliku tekstowego ASCII.
+- Co się dzieje w kodzie: Otwiera plik w trybie zapisu ('w'). Pętla przechodzi przez elementy bazy, a funkcja mat2str zamienia macierze numeryczne z powrotem na tekst, zapisując je przez fprintf.
+
+5. zawartosc_bd.m (Wyświetlanie zawartości)
+- Co robi: Wypisuje na ekranie nazwy wszystkich systemów w bazie.
+- Co się dzieje w kodzie: Włącza tryb stronicowania (more on) i pętlą for wyświetla kolejne nazwy systemów.
+
+6. wyszukaj_bd.m (Wyszukiwanie po fragmencie)
+- Co robi: Wyszukuje systemy zawierające zadany ciąg znaków w nazwie.
+- Co się dzieje w kodzie: Przeszukuje nazwy za pomocą strfind i wypisuje pasujące wyniki ze stronicowaniem.
+
+7. sortuj_N.m (Sortowanie wg normy macierzy)
+- Co robi: Sortuje systemy według rosnącej normy drugiego stopnia wybranej macierzy (A, B, C lub D).
+- Co się dzieje w kodzie: Oblicza norm(M, 2) dla każdego systemu, sortuje wartości funkcją sort i wyświetla wyniki.
+
+8. s_stabilne.m (Sprawdzanie stabilności)
+- Co robi: Wskazuje systemy asymptotycznie stabilne.
+- Co się dzieje w kodzie: Oblicza wartości własne macierzy A (eig). Jeśli wszystkie mają ujemne części rzeczywiste (all(real(lambda) < 0)), system jest stabilny.
+
+9. impuls.m (Generator pobudzenia)
+- Co robi: Reprezentuje funkcję matematyczną impulsu u(t) (krzywa Gaussa).
+- Co się dzieje w kodzie: Liczy wartość wzoru z eksponentą dla zadanego czasu t przy sigma = 0.005.
+
+10. xdot_dynamika.m (Równanie stanu)
+- Co robi: Definiuje prawą stronę równania różniczkowego dx/dt = Ax + Bu.
+- Co się dzieje w kodzie: Pobiera macierze A i B, pobiera wartość sterowania z funkcji impuls(t) i zwraca pochodną wektora stanu.
+
+11. wykresy.m (Wizualizacja wyników)
+- Co robi: Rysuje odpowiedź wyjściową oraz trajektorię w przestrzeni stanów.
+- Co się dzieje w kodzie: Rozwiązuje równanie stanu numerycznie (ode23) przy zerowych warunkach początkowych i dzieli okno na dwa wykresy (subplot), sprawdzając przy tym wymiar stanu (2D, 3D lub odpowiedni komunikat).
+
+12. Contents.m (Plik informacyjny)
+- Co robi: Opisuje zawartość toolboxu dla polecenia help.
+
+
+==================================================
+CZĘŚĆ 2: JAK Z TEGO KORZYSTAĆ (KROK PO KROKU)
+==================================================
+
+1. Inicjalizacja środowiska:
+   inicjalizacja_bd
+
+2. Wczytanie bazy z pliku:
+   wczytaj_p('baza_z.txt')
+
+3. Wyświetlenie zawartości bazy:
+   zawartosc_bd
+
+4. Wyszukanie konkretnego systemu:
+   wyszukaj_bd('system A')
+
+5. Sortowanie systemów wg normy macierzy A:
+   sortuj_N('A')
+
+6. Sprawdzenie, które systemy są stabilne:
+   s_stabilne
+
+7. Wykreślenie wykresów dla konkretnego systemu (np. 'system A' na czasie 0 do 5):
+   wykresy('system A', 5)
+
+8. Zapis bazy do pliku:
+   zapisz_bd('wyniki.txt')
