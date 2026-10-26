@@ -12,3 +12,9 @@ global baza A B C D;
 % Inicjalizacja struktury przechowującej bazę danych
 baza = struct('nazwa', {}, 'A', {}, 'B', {}, 'C', {}, 'D', {});
 disp('Inicjalizacja bazy danych zakończona pomyślnie.');
+
+baza = [];
+A=  [];
+B = [];
+C = [];
+D = [];

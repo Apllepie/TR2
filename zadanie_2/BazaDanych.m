@@ -39,8 +39,7 @@ classdef BazaDanych < handle
 	% WYSZUKAJ_BD(string) - metoda, ktora wyswietla na ekranie 
 	% nazwy wszystkich systemow w bazie danych, zawierajacych 
         % w sobie ciag znakow string.
-
-        end
+        
 
         function sortuj_N(obj,macierz)
 	% SORTUJ_N('matrix') - metoda, ktora wyswietla na ekranie 
@@ -64,7 +63,19 @@ classdef BazaDanych < handle
         function s_stabilne(obj)
 	    % S_STABILNE - metoda, ktora wyswietla na ekranie nazwy 
 	    % systemow z bazy danych, ktore sa asymptotycznie stabilne.
+            if isempty(obj)
+            disp('Baza danych jest pusta.');
+            return;
+            end
+    
+            more on;
+            disp('--- Systemy asymptotycznie stabilne ---');
+            stabilne_count = 0;
 
+            for i = 1:count
+                lambda = eig(obj.Dane.A)
+                if all(real(lambda) < 0)
+                    
         end
 
         function wykresy(obj, nazwa, tk)
