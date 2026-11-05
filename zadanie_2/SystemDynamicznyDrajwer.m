@@ -27,7 +27,7 @@ omega=0.1;
 rectangular=@(t)sign(sin(omega*t)); 
 zero=@(t)0;
 % ZADANIE 1: zdefiniuj uchwyt to funkcji skokowej
-
+skokowa = @(t) double (t >= 0);
 
 
 %% tworzenie obiektu klasy SystemDynamiczny z nastepujacymi
@@ -40,6 +40,7 @@ x0=[10;0];
 f=f+1; figure(f);
 ds.dsplots(tk,x0);
 
+
 %% odpowiedz systemu ds na pobudzenie zerowe, na przedziale czasu [0,tk] dla
 % x0=[0;0] (wykresy czasowe y,x,u) na osobnym rysunku nr f.
 x0=[0;0];
@@ -51,6 +52,9 @@ ds.dsplots(tk,x0);
 % na przedziale czasu [0,tk] dla x0=[0;0] (przebiegi czasowe y,x,u)
 % na oddzielnym rysunku nr f.
 
+ds.u = impulse; % przypisanie pobudzenia
+f=f+1; figure(f);
+ds.dsplots(tk, x0);
 
 
 %% odpowiedz systemu ds na pobudzenie skokowe
@@ -58,12 +62,18 @@ ds.dsplots(tk,x0);
 % na przedziale czasu [0,tk] dla x0=[0;0] (przebiegi czasowe y,x,u)
 % na oddzielnym rysunku nr f.
 
-
+ds.u = skokowa;
+f=f+1; figure(f);
+ds.dsplots(tk, x0);
 
 %% odpowiedz systemu ds na pobudzenie sygnalem prostokatnym
 % ZADANIE 4: wykresl odpowiedz systemu ds na pobudzenie sygnalem prostokatnym
 % na przedziale czasu [0,tk] dla x0=[0;0] (przebiegi czasowe y,x,u)
 % na oddzielnym rysunku nr f.
+
+ds.u = rectangular;
+f=f+1; figure(f);
+ds.dsplots(tk, x0);
 
   
 
@@ -73,9 +83,21 @@ ds.dsplots(tk,x0);
 % na oddzielnym rysunku nr f. Tym razem parametr omega w definicji
 % uchwytu dla sygnalu prostokatnego ma byc wiekszy niz w ZADANIU 4
 
-
+omega2 = 0.5; % parametr omega większy niż w ZAD 4
+rectangular2 = @(t) sign(sin(omega2*t));
+ds.u = rectangular2;
+f=f+1; figure(f);
+ds.dsplots(tk, x0);
 
 %% trajektoria systemu ds w przestrzeni stanu
 % ZADANIE 6: wykresl w przestrzeni stanu trajektorie stanu otrzymana
 % w efekcie odpowiedzi systemu na pobudzenie sygnalem prostokatnym
 % na przedziale czasu [0,tk] dla x0=[0;0] na oddzielnym rysunku f. 
+
+f=f+1; figure(f);
+[x, y, u, t] = ds.trajektoria(tk, x0);
+plot(x(:,1), x(:,2)); 
+grid on;
+xlabel('x_1 (stan 1)');
+ylabel('x_2 (stan 2)');
+title('Trajektoria w przestrzeni stanu (pobudzenie prostokątne)');

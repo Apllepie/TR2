@@ -1,0 +1,77 @@
+WYJAŚNIENIE PROJEKTU: Baza Danych i Regulacja Temperatury
+WSTĘP TEORETYCZNY - O CO CHODZI W TYM PROJEKCIE?
+Wyobraź sobie, że chcesz napisać program, który symuluje różne urządzenia fizyczne (np. silnik, zawieszenie samochodu, albo ogrzewanie w pokoju). W teorii sterowania takie urządzenia opisuje się za pomocą Równań Stanu. Wymagają one czterech macierzy (A, B, C, D).
+Zamiast trzymać te macierze "luzem" w kodzie, używamy Programowania Obiektowego. Tworzymy wirtualne "pudełko" (obiekt), do którego wrzucamy macierze A, B, C, D oraz funkcje, które potrafią te macierze przeliczać i rysować z nich wykresy.
+W tym projekcie stworzyliśmy:
+Szablon takiego pudełka (klasę SystemDynamiczny).
+Magazyn na takie pudełka (klasę BazaDanych).
+Zastosowaliśmy to do realnego problemu (skrypt temperatura.m).
+1. Plik: SystemDynamiczny.m
+Teoria:
+Każdy fizyczny system można opisać matematycznie. Zmienia się on w czasie pod wpływem jakiegoś wejścia u (np. napięcie, otwarcie kaloryfera). Jego "wnętrze" to stany x (np. temperatura), a to co widzimy na zewnątrz to wyjście y (np. wskazówka termometru).
+Co robi kod:
+To definicja klasy (szablonu).
+properties (Właściwości): Tu przechowujemy dane naszego systemu, czyli nazwę oraz macierze A, B, C, D i sygnał wejściowy u.
+Właściwość zależna M: Przechowuje gotowe równanie różniczkowe (obj.A*x + obj.B*obj.u(t)). Jest to matematyczny "silnik" systemu.
+trajektoria (Metoda): Bierze nasze równanie M i rozwiązuje je w czasie za pomocą funkcji MATLABa ode45. Oblicza jak system zachowa się w przyszłości.
+dsplots (Metoda): Wykorzystuje wynik z metody trajektoria i rysuje trzy ładne wykresy: wejście (co podaliśmy), stan (co dzieje się w środku) i wyjście (co obserwujemy).
+2. Plik: BazaDanych.m
+Teoria:
+Skoro mamy już klasę systemu, to co jeśli mamy ich 100? Potrzebujemy bazy danych. W MATLABie definiujemy ją jako klasę dziedziczącą po < handle. "Handle" oznacza, że obiekt zachowuje się jak dokument w chmurze (Google Docs) – jeśli jedna funkcja zmieni coś w bazie (np. doda system), to ta zmiana zostaje trwale zapisana, bez konieczności kopiowania całej bazy.
+Co robi kod:
+properties: Trzyma tablicę (listę) systemów dynamicznych Dane oraz licznik count (ile ich jest).
+wczytaj_P i wczytaj_k: Pozwalają dodać nowe systemy – odpowiednio z pliku tekstowego (.txt) lub wpisując je ręcznie z klawiatury.
+wyszukaj_BD: Przeszukuje listę i sprawdza, czy nazwa systemu zawiera wpisany przez nas tekst.
+s_stabilne: Bardzo ważna funkcja z punktu widzenia fizyki. System jest stabilny (nie wybuchnie, nie rozkręci się w nieskończoność), jeśli tzw. wartości własne jego macierzy A (obliczane poleceniem eig) są ujemne. Funkcja ta to sprawdza.
+zapisz_bd i zawartosc_bd: Odpowiadają za zapisywanie bazy z powrotem do pliku oraz wyświetlanie jej zawartości na ekranie.
+3. Plik: SystemDynamicznyDrajwer.m
+Teoria i kod:
+"Drajwer" to po prostu skrypt testowy. Jego celem jest upewnienie się, że klasa SystemDynamiczny działa.
+Tworzymy w nim jeden konkretny system testowy, wymyślamy mu kilka rodzajów wejść (pobudzeń), m.in.:
+skokowa - włączamy coś na 100% i tak zostawiamy (Zadanie 1).
+impulse - kopnięcie w system (krótki strzał) (Zadanie 2).
+rectangular - włączamy i wyłączamy na przemian (Zadanie 4 i 5).
+Dla każdego z nich wywołujemy .dsplots, żeby narysować wykresy.
+W Zadaniu 6 rysujemy tzw. trajektorię w przestrzeni stanu - zamiast rysować zmienną w czasie, rysujemy stan 
+x
+1
+x 
+1
+​
+ 
+ w zależności od stanu 
+x
+2
+x 
+2
+​
+ 
+.
+4. Plik: BazaDanychDrajwer.m
+Teoria i kod:
+Kolejny skrypt testowy, tym razem sprawdzający naszą bazę danych.
+Nie zawiera nowej matematyki. Po prostu uruchamia po kolei wszystkie metody, które napisaliśmy w BazaDanych.m (wczytywanie z pliku baza_z.txt, szukanie słowa "system", sortowanie, rysowanie wykresów, zapisywanie do nowego pliku baza_x.txt), aby udowodnić prowadzącemu, że kod nie ma błędów.
+5. Plik: temperatura.m (GWÓŹDŹ PROGRAMU)
+Teoria:
+To jest praktyczne zastosowanie całej naszej teorii. Chcemy ogrzać pokój.
+Mamy problem fizyczny: Termometr rtęciowy jest zamknięty w szkle. Kiedy kaloryfer grzeje, najpierw nagrzewa się i rozszerza szkło bańki termometru. Dopiero potem nagrzewa się rtęć. Przez to poziom rtęci na ułamek chwili spada zanim zacznie rosnąć. Nazywa się to "reakcją odwrotną" (non-minimum phase).
+Co robi kod krok po kroku:
+Sekcja Parametrów: Wpisujemy ułamki (
+a
+1
+,
+a
+2
+a 
+1
+​
+ ,a 
+2
+​
+ 
+, itd.) do macierzy A, B, C. Zdefiniowaliśmy 3 stany: temperaturę pokoju, szkła i rtęci.
+Część 2 (Brak sterowania): Po prostu obserwujemy układ. Jeśli temperatura na dworze skoczy do góry, widzimy na wykresie, że rtęć najpierw spada (reakcja odwrotna), a potem rośnie.
+Część 3 i 4 (Regulator P): Wprowadzamy sprzężenie zwrotne. Termometr patrzy na błąd i odkręca/zakręca zawór mnożąc ten błąd przez wzmocnienie Kp. W kodzie modyfikuje to naszą macierz systemu (A_bar = A + B1*Kp*C). Problem? Regulator "P" zawsze zostawia stały błąd (uchyb ustalony) – nigdy idealnie nie wraca do zadanej temperatury, jeśli na zewnątrz jest zimno.
+Część 5 (Regulator PI): Dodajemy do regulatora całkowanie (Ki). Całkowanie matematycznie "pamięta" przeszły błąd. W kodzie robimy to, dokładając nowy (czwarty) stan z (stąd macierze zyskują dodatkowe wiersze i kolumny, tworząc A_hat). Dzięki temu uchyb znika i temperatura w pokoju wraca idealnie do normy, a wykresy pokazują perfekcyjne działanie regulacji.
+6. Plik: Contents.m
+To jest plik pomocniczy dla MATLABa. Zawiera krótkie opisy (komentarze). Jeśli w konsoli wpiszesz komendę help zadanie_2, MATLAB zaglądnie do tego pliku i wypisze na ekran ładny, sformatowany tekst z listą dostępnych funkcji.

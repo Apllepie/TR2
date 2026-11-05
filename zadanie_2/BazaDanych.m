@@ -39,7 +39,17 @@ classdef BazaDanych < handle
 	% WYSZUKAJ_BD(string) - metoda, ktora wyswietla na ekranie 
 	% nazwy wszystkich systemow w bazie danych, zawierajacych 
         % w sobie ciag znakow string.
-        
+        if obj.count == 0
+                disp('Baza danych jest pusta.');
+                return;
+            end
+            disp(['--- Wyniki wyszukiwania dla: ', string, ' ---']);
+            for ind = 1:obj.count
+                if contains(obj.Dane(ind).nazwa, string)
+                    fprintf('Znaleziono: %s\n', obj.Dane(ind).nazwa);
+                end
+            end
+        end
 
         function sortuj_N(obj,macierz)
 	% SORTUJ_N('matrix') - metoda, ktora wyswietla na ekranie 
@@ -63,19 +73,24 @@ classdef BazaDanych < handle
         function s_stabilne(obj)
 	    % S_STABILNE - metoda, ktora wyswietla na ekranie nazwy 
 	    % systemow z bazy danych, ktore sa asymptotycznie stabilne.
-            if isempty(obj)
-            disp('Baza danych jest pusta.');
-            return;
+           if obj.count == 0
+                disp('Baza danych jest pusta.');
+                return;
             end
-    
             more on;
             disp('--- Systemy asymptotycznie stabilne ---');
             stabilne_count = 0;
-
-            for i = 1:count
-                lambda = eig(obj.Dane.A)
+            for i = 1:obj.count
+                lambda = eig(obj.Dane(i).A); % Poprawiony odczyt macierzy A konkretnego systemu
                 if all(real(lambda) < 0)
-                    
+                     fprintf('System %d: %s (stabilny)\n', i, obj.Dane(i).nazwa);
+                     stabilne_count = stabilne_count + 1;
+                end
+            end
+            if stabilne_count == 0
+                disp('Brak układów stabilnych.');
+            end
+            more off;
         end
 
         function wykresy(obj, nazwa, tk)
@@ -126,8 +141,20 @@ classdef BazaDanych < handle
         function zapisz_bd(obj, nazwa_pliku)
 	    % ZAPISZ_BD(nazwa_pliku) - metoda, ktora zapiszuje zawartosc 
             % bazy danych na pliku typu ASCII 
-
-        end 
+            fid = fopen(nazwa_pliku, 'w');
+            if fid == -1
+                error('Nie można utworzyć pliku.');
+            end
+            for ind = 1:obj.count
+                fprintf(fid, '%s\n', obj.Dane(ind).nazwa);
+                fprintf(fid, '%s\n', mat2str(obj.Dane(ind).A));
+                fprintf(fid, '%s\n', mat2str(obj.Dane(ind).B));
+                fprintf(fid, '%s\n', mat2str(obj.Dane(ind).C));
+                fprintf(fid, '%s\n', mat2str(obj.Dane(ind).D));
+            end
+            fclose(fid);
+            disp(['Zapisano do pliku: ', nazwa_pliku]);
+        end
 
         function zawartosc_bd(obj)
 	    % ZAWARTOSC_BD - metoda, ktora wyswietla na ekranie  
@@ -144,7 +171,17 @@ classdef BazaDanych < handle
         function wczytaj_k(obj)
 	    % WCZYTAJ_K - metoda, ktora umozliwia dolaczenie nowego systemu 
             % dynamicznego do bazy danych przy uzyciu klawiatury
-
+            nazwa_s = input('Podaj nazwę systemu: ', 's');
+            sA = input('Podaj macierz A (np. [-1 0; 0 -2]): ');
+            sB = input('Podaj macierz B: ');
+            sC = input('Podaj macierz C: ');
+            sD = input('Podaj macierz D: ');
+            
+            % Konstrukcja nowego obiektu i dodanie do bazy
+            nowy = SystemDynamiczny(nazwa_s, sA, sB, sC, sD, @(t)0);
+            obj.count = obj.count + 1;
+            obj.Dane(obj.count) = nowy;
+            disp('Dodano system pomyślnie.');
         end
         
         function wczytaj_P(obj,nazwaPliku)
