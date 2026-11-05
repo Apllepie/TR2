@@ -75,3 +75,71 @@ Część 3 i 4 (Regulator P): Wprowadzamy sprzężenie zwrotne. Termometr patrzy
 Część 5 (Regulator PI): Dodajemy do regulatora całkowanie (Ki). Całkowanie matematycznie "pamięta" przeszły błąd. W kodzie robimy to, dokładając nowy (czwarty) stan z (stąd macierze zyskują dodatkowe wiersze i kolumny, tworząc A_hat). Dzięki temu uchyb znika i temperatura w pokoju wraca idealnie do normy, a wykresy pokazują perfekcyjne działanie regulacji.
 6. Plik: Contents.m
 To jest plik pomocniczy dla MATLABa. Zawiera krótkie opisy (komentarze). Jeśli w konsoli wpiszesz komendę help zadanie_2, MATLAB zaglądnie do tego pliku i wypisze na ekran ładny, sformatowany tekst z listą dostępnych funkcji.
+
+
+
+================================================================
+W MATLABie „terminalem” jest okno poleceń (Command Window). Korzystanie z klas polega na stworzeniu obiektu (zmiennej reprezentującej klasę), a potem wywoływaniu jego metod (funkcji) za pomocą kropki (obiekt.metoda()).
+Oto krótka ściągawka z przykładami, jak używać obu klas krok po kroku:
+1. Klasa SystemDynamiczny (badanie pojedynczego układu)
+Krok 1: Tworzenie obiektu
+Możesz stworzyć system, podając jego nazwę, macierze 
+A
+,
+B
+,
+C
+,
+D
+A,B,C,D
+ oraz sygnał wejściowy 
+u
+u
+:
+Matlab
+% Definiujemy macierze i wejście (np. skok jednostkowy)
+A = [-1, 0; 0, -2];
+B = [1; 1];
+C = [1, 0];
+D = 0;
+u = @(t) 1; 
+
+% Tworzymy obiekt "sys"
+sys = SystemDynamiczny('MojUklad', A, B, C, D, u);
+Krok 2: Modyfikacja w locie
+W każdej chwili możesz zmienić właściwość obiektu:
+Matlab
+sys.u = @(t) sin(t);   % zmiana wymuszenia na sinusoidę
+sys.nazwa = 'NowaNazwa';
+Krok 3: Wyświetlenie wykresów lub pobranie danych
+Matlab
+% Narysuj wykresy na przedziale [0, 10] sekund z warunkiem początkowym x0 = [0; 0]
+sys.dsplots(10, [0; 0]);
+
+% Albo pobierz same liczby bez rysowania wykresów:
+[x, y, u, t] = sys.trajektoria(10, [0; 0]);
+2. Klasa BazaDanych (zarządzanie zbiorem systemów)
+Krok 1: Wczytanie bazy z pliku
+Matlab
+% Tworzymy obiekt bazy i od razu wczytujemy plik tekstowy:
+bd = BazaDanych('baza_z.txt');
+(Jeśli utworzysz pustą bazę przez bd = BazaDanych;, możesz później wczytać plik komendą: bd.wczytaj_P('baza_z.txt');)
+Krok 2: Przeglądanie i wyszukiwanie
+Matlab
+bd.zawartosc_bd();          % Wypisuje nazwy wszystkich systemów w bazie
+bd.wyszukaj_BD('system');   % Szuka systemów zawierających w nazwie słowo "system"
+bd.s_stabilne();            % Wypisuje tylko te systemy, które są stabilne
+bd.sortuj_N('A');           % Sortuje i wyświetla systemy wg normy macierzy A
+Krok 3: Rysowanie wykresów z bazy
+Matlab
+% Rysuje wykres odpowiedzi dla systemu o podanej nazwie przez 15 sekund:
+bd.wykresy('system_1', 15);
+Krok 4: Dodawanie z klawiatury i zapis do nowego pliku
+Matlab
+bd.wczytaj_k();             % MATLAB zapyta Cię w konsoli o nazwę i macierze nowego układu
+bd.zapisz_bd('kopia.txt');  % Zapisuje całą powiększoną bazę do pliku kopia.txt
+Podsumowanie w 3 linijkach (najczęstszy schemat):
+Tworzysz zmienną z klasy: obiekt = NazwaKlasy(dane_startowe);
+Zmieniasz pola za pomocą kropki: obiekt.pole = nowa_wartosc;
+Uruchamiasz akcje: obiekt.nazwa_funkcji(argumenty);
+
