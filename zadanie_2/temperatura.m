@@ -21,7 +21,7 @@ tk = 100; % Czas symulacji
 
 % Definicja skoku jednostkowego
 skok_jednostkowy = @(t) double(t >= 0);
-zero_in = @(t) 0;
+zero_in = @(t) zeros(size(t));
 
 %% CZĘŚĆ 2: Brak sterowania (u = 0), To - skok jednostkowy
 disp('--- Symulacja Część 2: Brak sterowania ---');
