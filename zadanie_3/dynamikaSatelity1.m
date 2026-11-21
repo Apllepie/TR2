@@ -1,7 +1,6 @@
 %% A.4 DYNAMIKA SATELITY
 clear all
 close all
-
 %% A.4.2 Modelowanie matematyczne
 
 % definiowanie parametrow satelity
@@ -24,9 +23,9 @@ dth=@(t)0;
 % derivation of f:
 sD=@(t,x)[...
     x(2,:); ...
-    -k./(x(1,:).^2)+ x(1,:).*(omega+x(4,:)).^2 + 1.0./(m).*(ur(t)+dr(t));
-    0; ...  % jest nieprawidlowo (w celu zapewnienia wykonywalnosci skryptu)
-    0  ...  % jest nieprawidlowo 
+    -k./(x(1,:).^2) + x(1,:).*(omega+x(4,:)).^2 + (ur(t)+dr(t))./m; ...
+    x(4,:); ...
+    -2*x(2,:).*(omega+x(4,:))./x(1,:) + (uth(t)+dth(t))./(m*x(1,:).^2) ...
     ];
 
 %% A.4.3 analiza punktu rownowagi
@@ -52,12 +51,14 @@ A= ...
          0, -(2*omega)/rR, 0,          0 ...
 ];
 
-B= ...
-[ ...
-...
-];
+B= [  0,          0,   0,          0; ...
+    1/m,          0, 1/m,          0; ...
+      0,          0,   0,          0; ...
+      0, 1/(m*rR^2),   0, 1/(m*rR^2) ];
 
-C= [];
+C= [0, 0, 1, 0];
+
+sLD=@(t,x) A*x + B*[ur(t); uth(t); dr(t); dth(t)];
 
 % tworzenie kodu dla przyblizenia liniowego (sLD)  dynamiki satelity 
 % f(x,u) w postaci fl(x,u):=A*x + B*u
@@ -82,13 +83,13 @@ x0=[rR;0;0;0];
 x0L=x0-[rR;0;0;0];
 
 % tworzenie kodu dla dynamiki satelity (sD)
-sD=@(t,x)[0; ... % jest nieprawidlowo (w celu zapewnienia wykonywalnosci skryptu)
-    0; ... % jest nieprawidlowo
-    0; ... % jest nieprawidlowo
-    0; ... % jest nieprawidlowo
+sD=@(t,x)[...
+    x(2,:); ...
+    -k./(x(1,:).^2) + x(1,:).*(omega+x(4,:)).^2 + (ur(t)+dr(t))./m; ...
+    x(4,:); ...
+    -2*x(2,:).*(omega+x(4,:))./x(1,:) + (uth(t)+dth(t))./(m*x(1,:).^2) ...
     ];
-% tworzenie kodu dla przyblizenia liniowego dynamiki satelity (sLD)
-sLD=@(t,x)zeros(4,1); % jest nieprawidlowo (w celu zapewnienia wykonywalnosci skryptu)
+sLD=@(t,x) A*x + B*[ur(t); uth(t); dr(t); dth(t)];
 
 % symulacja i kreslenie wykresow dla dynamiki satelity (sD)
 [ts,ys] = ode45(sD,[0 T],x0);
@@ -122,6 +123,11 @@ x0L=x0-[rR;0;0;0];  % warunek poczatkowy dla aproksymacji liniowej
 % warunki poczatkowe (radialne zaklocenie jest niezmienione)
 x0=[rR;2*pi/100;0;0];
 x0L=x0-[rR;0;0;0];
+[ts,ys]   = ode45(sD,[0 T],x0);
+[tls,yls] = ode45(sLD,[0 T],x0L);
+figure(2)
+subplot(2,1,1), plot(ts,ys(:,1)-rR, tls,yls(:,1),'--'), title("Zad.1: \Delta r(t)"), legend("nieliniowy","liniowy"), xlabel("t[s]"), ylabel("\Delta r [m]")
+subplot(2,1,2), plot(ts,ys(:,3),    tls,yls(:,3),'--'), title("Zad.1: \phi(t)"),     legend("nieliniowy","liniowy"), xlabel("t[s]"), ylabel("\phi [rad]")
 
 % ZADANIE 2
 % symulacja i kreslenie wykresow dla dynamiki satelity (sD)
@@ -134,9 +140,14 @@ x0L=x0-[rR;0;0;0];
 % satelity przez ziemie
 
 % warunki poczatkowe i radialne zaklocenie
-x0=[rR;0;0;0];
+x0=[rR; 0; 2*pi/100; 0]; % poprawiona pozycja phi(0)!
 x0L=x0-[rR;0;0;0];
-dr=@(t)(sign(t)+1)*m*9.81/2*0.05; 
+
+[ts,ys]   = ode45(sD,[0 T],x0);
+[tls,yls] = ode45(sLD,[0 T],x0L);
+figure(3)
+subplot(2,1,1), plot(ts,ys(:,1)-rR, tls,yls(:,1),'--'), title("Zad.2: \Delta r(t)"), legend("nieliniowy","liniowy"), xlabel("t[s]"), ylabel("\Delta r [m]")
+subplot(2,1,2), plot(ts,ys(:,3),    tls,yls(:,3),'--'), title("Zad.2: \phi(t)"),     legend("nieliniowy","liniowy"), xlabel("t[s]"), ylabel("\phi [rad]")
 
 % ZADANIE 3
 % tworzenie kodu dla dynamiki satelity (sD)
@@ -155,6 +166,20 @@ dr=@(t)(sign(t)+1)*m*9.81/2*0.05;
 
 % warunki poczatkowe i radialne zaklocenie
 dr=@(t)cos(2*pi/T*t)*m*9.81*0.05; 
+sD=@(t,x)[...
+    x(2,:); ...
+    -k./(x(1,:).^2) + x(1,:).*(omega+x(4,:)).^2 + (ur(t)+dr(t))./m; ...
+    x(4,:); ...
+    -2*x(2,:).*(omega+x(4,:))./x(1,:) + (uth(t)+dth(t))./(m*x(1,:).^2) ...
+    ];
+sLD=@(t,x) A*x + B*[ur(t); uth(t); dr(t); dth(t)];
+
+[ts,ys]   = ode45(sD,[0 T],x0);
+[tls,yls] = ode45(sLD,[0 T],x0L);
+figure(4)
+subplot(2,1,1), plot(ts,ys(:,1)-rR, tls,yls(:,1),'--'), title("Zad.3: \Delta r(t)"), legend("nieliniowy","liniowy"), xlabel("t[s]"), ylabel("\Delta r [m]")
+subplot(2,1,2), plot(ts,ys(:,3),    tls,yls(:,3),'--'), title("Zad.3: \phi(t)"),     legend("nieliniowy","liniowy"), xlabel("t[s]"), ylabel("\phi [rad]")
+
 
 % ZADANIE 4
 % tworzenie kodu dla dynamiki satelity (sD)
@@ -164,3 +189,16 @@ dr=@(t)cos(2*pi/T*t)*m*9.81*0.05;
 % symulacja i kreslenie wykresow dla dynamiki satelity (sD)
 
 % symulacja i kreslenie wykresow dla aproksymacji liniowej dynamiki satelity (sLD)
+sD=@(t,x)[...
+    x(2,:); ...
+    -k./(x(1,:).^2) + x(1,:).*(omega+x(4,:)).^2 + (ur(t)+dr(t))./m; ...
+    x(4,:); ...
+    -2*x(2,:).*(omega+x(4,:))./x(1,:) + (uth(t)+dth(t))./(m*x(1,:).^2) ...
+    ];
+sLD=@(t,x) A*x + B*[ur(t); uth(t); dr(t); dth(t)];
+
+[ts,ys]   = ode45(sD,[0 T],x0);
+[tls,yls] = ode45(sLD,[0 T],x0L);
+figure(5)
+subplot(2,1,1), plot(ts,ys(:,1)-rR, tls,yls(:,1),'--'), title("Zad.4: \Delta r(t)"), legend("nieliniowy","liniowy"), xlabel("t[s]"), ylabel("\Delta r [m]")
+subplot(2,1,2), plot(ts,ys(:,3),    tls,yls(:,3),'--'), title("Zad.4: \phi(t)"),     legend("nieliniowy","liniowy"), xlabel("t[s]"), ylabel("\phi [rad]")

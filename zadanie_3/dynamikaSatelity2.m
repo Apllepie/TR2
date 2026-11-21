@@ -120,8 +120,6 @@ fl=A*[x1;x2;x3;x4]+B*[ur;uth;dr;dth];
 
 %% A.4.5 Analiza modelu
 % stabilnosc przyblizenia liniowego
-% disp('A.4.5')
-
 disp('A.4.5')
 disp('testowanie stabilnosci:')
 ev=eig(A);
@@ -154,40 +152,63 @@ sLD = matlabFunction(sLDfl,'Vars',{t,[x1;x2;x3;x4]});
 figure(1)
 subplot(2,1,1)
 plot(ts,ys)
-title("model nieliniowy")
+title("model nieliniowy (punkt rownowagi)")
 xlabel("t[s]"), ylabel("x")
 % symulacja i kreslenie wykresow dla aproksymacji liniowej dynamiki satelity (sLD) 
-[ts,ys] = ode45(sLD,[0 T],x0L);
+[tls,yls] = ode45(sLD,[0 T],x0L);
 subplot(2,1,2)
-plot(ts,ys)
-title("aproksymacja liniowa")
+plot(tls,yls)
+title("aproksymacja liniowa (punkt rownowagi)")
 xlabel("t[s]"), ylabel("x")
 
 % 1
-% 1%--we zaburzenie r(0) wzgledem promienia orbity geostacjonarnej
+% 1%-we zaburzenie r(0) wzgledem promienia orbity geostacjonarnej
 
 % warunki poczatkowe (radialne zaklocenie jest niezmienione)
 x0=[rR*1.01;0;0;0];
 x0L=x0-[rR;0;0;0];
 
 % ZADANIE 1
-% symulacja i kreslenie wykresow dla dynamiki satelity (sD)
+% symulacja i kreslenie wykresow dla dynamiki satelity (sD) i liniowej (sLD)
+[ts,ys]   = ode45(sD,[0 T],x0);
+[tls,yls] = ode45(sLD,[0 T],x0L);
+figure(2)
+subplot(2,1,1)
+plot(ts, ys(:,1)-rR, tls, yls(:,1), '--')
+title("Zadanie 1: 1%-we zaburzenie r(0) - \Delta r(t) = r(t) - rR")
+xlabel("t [s]"), ylabel("\Delta r [m]")
+legend("model nieliniowy", "aproksymacja liniowa")
 
-% symulacja i kreslenie wykresow dla aproksymacji liniowej dynamiki satelity (sLD)
-
+subplot(2,1,2)
+plot(ts, ys(:,3), tls, yls(:,3), '--')
+title("Zadanie 1: 1%-we zaburzenie r(0) - \phi(t)")
+xlabel("t [s]"), ylabel("\phi [rad]")
+legend("model nieliniowy", "aproksymacja liniowa")
 
 
 % 1%-we zaburzenie phi(0) wzgledem pelnego obrotu Ziemi wzgledem swojej osi
 
 % warunki poczatkowe (radialne zaklocenie jest niezmienione)
-x0=[rR;2*pi/100;0;0];
+% POPRAWKA wzgledem szablonu: phi znajduje sie na 3. pozycji wektora stanu [r; r'; phi; phi']
+x0=[rR;0;2*pi/100;0];
 x0L=x0-[rR;0;0;0];
 
 % ZADANIE 2
-% symulacja i kreslenie wykresow dla dynamiki satelity (sD)
+% symulacja i kreslenie wykresow dla dynamiki satelity (sD) i liniowej (sLD)
+[ts,ys]   = ode45(sD,[0 T],x0);
+[tls,yls] = ode45(sLD,[0 T],x0L);
+figure(3)
+subplot(2,1,1)
+plot(ts, ys(:,1)-rR, tls, yls(:,1), '--')
+title("Zadanie 2: 1%-we zaburzenie \phi(0) - \Delta r(t) = r(t) - rR")
+xlabel("t [s]"), ylabel("\Delta r [m]")
+legend("model nieliniowy", "aproksymacja liniowa")
 
-% symulacja i kreslenie wykresow dla aproksymacji liniowej dynamiki satelity (sLD)  
-
+subplot(2,1,2)
+plot(ts, ys(:,3), tls, yls(:,3), '--')
+title("Zadanie 2: 1%-we zaburzenie \phi(0) - \phi(t)")
+xlabel("t [s]"), ylabel("\phi [rad]")
+legend("model nieliniowy", "aproksymacja liniowa")
 
 
 % 2
@@ -201,15 +222,27 @@ x0L=x0-[rR;0;0;0];
 
 % ZADANIE 3
 % tworzenie kodu dla dynamiki satelity (sD)
-sDf= 0; %jest nieprawidlowo (zrobione w celu zapewnienia wykonywalnosci skryptu)
-sD = 0; %jest nieprawidlowo
+sDf=subs(f,{K,M,OMEGA,R,dr,dth,ur,uth},{k,m,omega,rR,dr1,u0,u0,u0});
+sD = matlabFunction(sDf,'Vars',{t,[x1;x2;x3;x4]});
 % tworzenie kodu dla aproksymacji liniowej dynamiki satelity (sLD)
-sLDfl= 0; %jest nieprawidlowo
-sLD =  0; %jest nieprawidlowo
+sLDfl=subs(fl,{dr,dth,ur,uth},{dr1,u0,u0,u0});
+sLD = matlabFunction(sLDfl,'Vars',{t,[x1;x2;x3;x4]});
 
-% symulacja i kreslenie wykresow dla dynamiki satelity (sD)  
+% symulacja i kreslenie wykresow dla dynamiki satelity (sD) i liniowej (sLD)
+[ts,ys]   = ode45(sD,[0 T],x0);
+[tls,yls] = ode45(sLD,[0 T],x0L);
+figure(4)
+subplot(2,1,1)
+plot(ts, ys(:,1)-rR, tls, yls(:,1), '--')
+title("Zadanie 3: zaklocenie skokowe - \Delta r(t) = r(t) - rR")
+xlabel("t [s]"), ylabel("\Delta r [m]")
+legend("model nieliniowy", "aproksymacja liniowa")
 
-% symulacja i kreslenie wykresow dla aproksymacji liniowej dynamiki satelity (sLD)  
+subplot(2,1,2)
+plot(ts, ys(:,3), tls, yls(:,3), '--')
+title("Zadanie 3: zaklocenie skokowe - \phi(t)")
+xlabel("t [s]"), ylabel("\phi [rad]")
+legend("model nieliniowy", "aproksymacja liniowa")
 
 
 % 3
@@ -220,16 +253,26 @@ sLD =  0; %jest nieprawidlowo
 % radialne zaklocenie (warunki poczatkowe sa niezmienione)
 dr2=@(t)cos(2*pi/T*t)*m*9.81*0.05;
 
-
 % ZADANIE 4
 % tworzenie kodu dla dynamiki satelity (sD)
-sDf= 0; %jest nieprawidlowo (zrobione w celu zapewnienia wykonywalnosci skryptu)
-sD = 0; %jest nieprawidlowo 
+sDf=subs(f,{K,M,OMEGA,R,dr,dth,ur,uth},{k,m,omega,rR,dr2,u0,u0,u0});
+sD = matlabFunction(sDf,'Vars',{t,[x1;x2;x3;x4]});
 % tworzenie kodu dla aproksymacji liniowej dynamiki satelity (sLD)
-sLDfl= 0; %jest nieprawidlowo 
-sLD = 0;  %jest nieprawidlowo
+sLDfl=subs(fl,{dr,dth,ur,uth},{dr2,u0,u0,u0});
+sLD = matlabFunction(sLDfl,'Vars',{t,[x1;x2;x3;x4]});
 
-% symulacja i kreslenie wykresow dla dynamiki satelity (sD)  
+% symulacja i kreslenie wykresow dla dynamiki satelity (sD) i liniowej (sLD)
+[ts,ys]   = ode45(sD,[0 T],x0);
+[tls,yls] = ode45(sLD,[0 T],x0L);
+figure(5)
+subplot(2,1,1)
+plot(ts, ys(:,1)-rR, tls, yls(:,1), '--')
+title("Zadanie 4: zaklocenie okresowe - \Delta r(t) = r(t) - rR")
+xlabel("t [s]"), ylabel("\Delta r [m]")
+legend("model nieliniowy", "aproksymacja liniowa")
 
-% symulacja i kreslenie wykresow dla aproksymacji liniowej dynamiki satelity (sLD)  
-
+subplot(2,1,2)
+plot(ts, ys(:,3), tls, yls(:,3), '--')
+title("Zadanie 4: zaklocenie okresowe - \phi(t)")
+xlabel("t [s]"), ylabel("\phi [rad]")
+legend("model nieliniowy", "aproksymacja liniowa")
