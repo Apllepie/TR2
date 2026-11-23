@@ -121,7 +121,7 @@ x0L=x0-[rR;0;0;0];  % warunek poczatkowy dla aproksymacji liniowej
 % 1%-we zaburzenie phi(0) wzgledem pelnego obrotu Ziemi wzgledem swojej osi
 
 % warunki poczatkowe (radialne zaklocenie jest niezmienione)
-x0=[rR;2*pi/100;0;0];
+x0=[rR;0;0;0];
 x0L=x0-[rR;0;0;0];
 [ts,ys]   = ode45(sD,[0 T],x0);
 [tls,yls] = ode45(sLD,[0 T],x0L);
